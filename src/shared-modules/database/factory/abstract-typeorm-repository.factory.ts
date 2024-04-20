@@ -9,7 +9,8 @@ export function AbstractTypeormRepositoryFactory<Entity>(classRef: Constructor<E
     @Injectable()
     class FactoredTypeormRepository extends AbstractTypeormRepository<Entity> {
         constructor(
-            @InjectRepository(classRef as EntityClassOrSchema) readonly typeormRepository: Repository<Entity>,
+            @InjectRepository(classRef as EntityClassOrSchema)
+            readonly typeormRepository: Repository<Entity>,
         ) {
             super(typeormRepository)
         }

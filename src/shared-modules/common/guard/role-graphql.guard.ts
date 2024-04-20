@@ -27,14 +27,18 @@ export class RoleGraphQLGuard implements CanActivate {
         const request = GqlExecutionContext.create(context).getContext().req
         const userRequestData: TJwtTokenPayload | undefined = request[REQUEST_USER_KEY]
 
-        if (requiredRoles.includes(userRequestData.role)) {
-            return true
+        if (userRequestData) {
+            const osnoServiceData = tokenData.services.find((item) => item.recognitionKey === 'osno')
+            for (let item in osnoServiceData.roles) {
+                if (requiredRoles.includes(item)) {
+                    return true
+                }
+            }
         }
-        else {
-            Builder(UniversalError)
-                .messages([FORBIDDEN_ERROR_MESSAGE])
-                .exceptionBaseClass(EUniversalExceptionType.forbidden)
-                .build().throw()
-        }
+
+        Builder(UniversalError)
+            .messages([FORBIDDEN_ERROR_MESSAGE])
+            .exceptionBaseClass(EUniversalExceptionType.forbidden)
+            .build().throw()
     }
 }
