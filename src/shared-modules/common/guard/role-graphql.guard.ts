@@ -1,12 +1,13 @@
 import { CanActivate, ExecutionContext, Injectable } from '@nestjs/common'
 import { Reflector } from '@nestjs/core'
 import { FORBIDDEN_ERROR_MESSAGE, REQUEST_ROLES_KEY, REQUEST_USER_KEY } from '../constant'
-import { ERole } from '../enum/role.enum'
 import { Builder } from 'builder-pattern'
 import { UniversalError } from '../class/universal-error'
 import { EUniversalExceptionType } from '../enum/exceptions'
 import { GqlExecutionContext } from '@nestjs/graphql'
 import { TJwtTokenPayload } from '@src/shared-modules/jwt-oauth2/type/jwt-token-payload.type'
+import {EInternalRole} from '@modules/common/enum/role.enum'
+import {TJwtTokenPayloadExternalRoles} from '@src/shared-modules/jwt-oauth2/type/jwt-token-payload-external-roles.type'
 
 @Injectable()
 export class RoleGraphQLGuard implements CanActivate {
@@ -16,7 +17,7 @@ export class RoleGraphQLGuard implements CanActivate {
     }
 
     async canActivate(context: ExecutionContext): Promise<boolean> {
-        const requiredRoles = this.reflector.getAllAndOverride<ERole[]>(REQUEST_ROLES_KEY, [
+        const requiredRoles = this.reflector.getAllAndOverride<EInternalRole[]>(REQUEST_ROLES_KEY, [
             context.getHandler(),
             context.getClass(),
         ])
@@ -28,9 +29,10 @@ export class RoleGraphQLGuard implements CanActivate {
         const userRequestData: TJwtTokenPayload | undefined = request[REQUEST_USER_KEY]
 
         if (userRequestData) {
-            const osnoServiceData = tokenData.services.find((item) => item.recognitionKey === 'osno')
+            const osnoServiceData = userRequestData.services.find((item) => item.recognitionKey === 'osno')
+            console.log(osnoServiceData.roles, osnoServiceData, requiredRoles)
             for (let item in osnoServiceData.roles) {
-                if (requiredRoles.includes(item)) {
+                if (requiredRoles.includes((item as unknown as TJwtTokenPayloadExternalRoles).recognitionKey as EInternalRole)) {
                     return true
                 }
             }

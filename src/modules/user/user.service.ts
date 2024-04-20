@@ -2,6 +2,18 @@ import {UserRepository} from '@modules/user/user.repository'
 import {Inject, Injectable} from '@nestjs/common'
 import {FindOptionsWhere} from 'typeorm'
 import {UserEntity} from '@modules/user/entity/user.entity'
+import {
+    sortInputListToFindOptionsOrderAdapter,
+} from '@src/shared-modules/graphql/adapter/sort-input-list-to-find-options-order.adapter'
+import {Builder} from 'builder-pattern'
+import {
+    listInputToFindOptionsWhereAdapter,
+} from '@src/shared-modules/graphql/adapter/list-input-to-find-options-where.adapter'
+import {UserListInput} from '@modules/user/input/user-list.input'
+import {UserListAttributes} from '@modules/user/attributes/user-list.attributes'
+import {userEntityToUserAttributesDtoAdapter} from '@modules/user/adapter/user-entity-to-user-attributes-dto.adapter'
+import {ListMetaAttributes} from '@src/shared-modules/graphql/attributes/list-meta.attributes'
+import {UserAttributes} from '@modules/user/attributes/user.attributes'
 
 @Injectable()
 export class UserService {
@@ -14,13 +26,6 @@ export class UserService {
     async getAll(input: UserListInput): Promise<UserListAttributes> {
         const filter: FindOptionsWhere<UserEntity> = {
             ...listInputToFindOptionsWhereAdapter<UserEntity>(input),
-            role: input.roleFilter,
-            externalServices: {
-                id: input.externalServiceFilter ? In(input.externalServiceFilter) : undefined,
-            },
-            externalRoles: {
-                id: input.externalRoleFilter ? In(input.externalRoleFilter) : undefined,
-            },
         }
 
         const userEntityInstances = await this.userRepository.getAll(
@@ -28,21 +33,12 @@ export class UserService {
             sortInputListToFindOptionsOrderAdapter<UserEntity>(
                 input.sort,
                 Builder<UserEntity>()
-                    .id(null).email(null).password(null)
-                    .createdAt(null).updatedAt(null)
-                    .verified(null).role(null)
+                    .id(null).externalId(null).sex(null)
+                    .createdAt(null).updatedAt(null).bonusPoints(null)
                     .build(),
             ),
             input.page,
             input.perPage,
-            {
-                externalServices: {
-                    externalRoles: true
-                },
-                externalRoles: {
-                    externalService: true
-                },
-            },
         )
 
         const totalElements = await this.userRepository.count(filter)
@@ -66,15 +62,10 @@ export class UserService {
 
     async getOne(id: string): Promise<UserAttributes> {
         const user = await this.userRepository.getOne(
-            { id: id },
+            {id: id},
             {
-                externalServices: {
-                    externalRoles: true
-                },
-                externalRoles: {
-                    externalService: true
-                },
             },
         )
         return userEntityToUserAttributesDtoAdapter(user)
     }
+}

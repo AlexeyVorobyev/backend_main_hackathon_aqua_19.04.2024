@@ -5,6 +5,7 @@ import { JwtOauth2Service } from '@src/shared-modules/jwt-oauth2/jwt-oauth2.serv
 @Module({
     imports: [
         JwtAccessModule,
+
     ],
     providers: [JwtOauth2Service],
     exports: [JwtOauth2Service],
