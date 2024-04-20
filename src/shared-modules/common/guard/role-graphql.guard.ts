@@ -7,7 +7,6 @@ import { EUniversalExceptionType } from '../enum/exceptions'
 import { GqlExecutionContext } from '@nestjs/graphql'
 import { TJwtTokenPayload } from '@src/shared-modules/jwt-oauth2/type/jwt-token-payload.type'
 import {EInternalRole} from '@modules/common/enum/role.enum'
-import {TJwtTokenPayloadExternalRoles} from '@src/shared-modules/jwt-oauth2/type/jwt-token-payload-external-roles.type'
 
 @Injectable()
 export class RoleGraphQLGuard implements CanActivate {
@@ -30,9 +29,8 @@ export class RoleGraphQLGuard implements CanActivate {
 
         if (userRequestData) {
             const osnoServiceData = userRequestData.services.find((item) => item.recognitionKey === 'osno')
-            console.log(osnoServiceData.roles, osnoServiceData, requiredRoles)
-            for (let item in osnoServiceData.roles) {
-                if (requiredRoles.includes((item as unknown as TJwtTokenPayloadExternalRoles).recognitionKey as EInternalRole)) {
+            for (let item of osnoServiceData.roles) {
+                if (requiredRoles.includes(item.recognitionKey as EInternalRole)) {
                     return true
                 }
             }

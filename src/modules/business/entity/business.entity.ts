@@ -9,7 +9,13 @@ export class BusinessEntity extends DefaultDatabaseEntity<BusinessEntity> {
     @Column({
         nullable: true
     })
-    clients: Number
+    clients: number
+
+    @Column()
+    name: string
+
+    @Column({unique: true, name: 'tax_payer_identity'})
+    taxPayerIdentity: string
 
     @ManyToMany(
         () => UserEntity,
